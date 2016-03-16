@@ -1,4 +1,4 @@
-package Java8.lambad;
+package com.java8.lambad;
 
 import java.util.ArrayList;
 import java.util.List;
