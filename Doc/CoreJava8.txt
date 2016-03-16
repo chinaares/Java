@@ -1,0 +1,5 @@
+lambda
+
+http://java8.in/java-8-lambda-expression/
+http://www.lambdafaq.org/
+http://tutorials.jenkov.com/java/lambda-expressions.html
