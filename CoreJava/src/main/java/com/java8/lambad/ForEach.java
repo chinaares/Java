@@ -1,7 +1,10 @@
 package com.java8.lambad;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.text.StyledEditorKit.ItalicAction;
 
 public class ForEach {
 
@@ -20,14 +23,21 @@ public class ForEach {
 			System.out.println("noramal for each ---"+string);
 		}
 		
+		// using Iterator
+		Iterator<String> itr = list.iterator();
+		  
+		while(itr.hasNext()) {
+	         Object element = itr.next();
+	         System.out.println("--->>"+element);
+	      }
+		
+		itr.forEachRemaining(System.out::println);
+		itr.forEachRemaining(string->System.out.println("***- >>"+string));
+		
 		// for eatch using lambad exp in java8
 		list.forEach(string->System.out.println("Lambada Exp foreatch --- >>"+string));
 		
-		List<String> list2=null;
-		for (String string : list2) {
-			System.out.println(string);
-		}
-		list2.forEach(string->System.out.println(string));
+		
 		
 	}
 }
