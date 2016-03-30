@@ -1,0 +1,698 @@
+Ericsson Interview Questions Core Java
+
+1. What is static and dynamic binding. Write an example program to explain.
+   static binding is method overloading while dynamic binding in method overriding. 
+2. What is serialization explain with an example.
+   Serialization is the process of converting an object into a stream of bytes in order to store the object or transmit it to memory, a database, or a file. 
+   Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization.
+   To serialize a object in java we need to implement marker interface (interface with no method) and java system takes take of serialization of that object. 
+  	
+public class Employee implements java.io.Serializable
+{
+   public String name;
+   public String address;
+   public transient int SSN;
+   public int number;
+   
+   public void mailCheck()
+   {
+      System.out.println("Mailing a check to " + name + " " + address);
+   }
+}
+
+public class SerializeDemo
+{
+   public static void main(String [] args)
+   {
+      Employee e = new Employee();
+      e.name = "Reyan Ali";
+      e.address = "Phokka Kuan, Ambehta Peer";
+      e.SSN = 11122333;
+      e.number = 101;
+      
+      try
+      {
+         FileOutputStream fileOut =
+         new FileOutputStream("/tmp/employee.ser");
+         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+         out.writeObject(e);
+         out.close();
+         fileOut.close();
+         System.out.printf("Serialized data is saved in /tmp/employee.ser");
+      }catch(IOException i)
+      {
+          i.printStackTrace();
+      }
+   }
+}
+
+public class DeserializeDemo
+{
+   public static void main(String [] args)
+   {
+      Employee e = null;
+      try
+      {
+         FileInputStream fileIn = new FileInputStream("/tmp/employee.ser");
+         ObjectInputStream in = new ObjectInputStream(fileIn);
+         e = (Employee) in.readObject();
+         in.close();
+         fileIn.close();
+      }catch(IOException i)
+      {
+         i.printStackTrace();
+         return;
+      }catch(ClassNotFoundException c)
+      {
+         System.out.println("Employee class not found");
+         c.printStackTrace();
+         return;
+      }
+      System.out.println("Deserialized Employee...");
+      System.out.println("Name: " + e.name);
+      System.out.println("Address: " + e.address);
+      System.out.println("SSN: " + e.SSN);
+      System.out.println("Number: " + e.number);
+    }
+}
+
+ 
+3. What is immutable. Write an immutable class.
+   A final class having no set method is called as immutable class. For such class the values are set only at the time of object creation through constructor. 
+   benefit of immutable includes class includes: 
+   1) thread safety
+   2) no overhead of even listener mechanism as no attribute can be changed via set method. 
+   
+4. Write an example of Inheritance. Can we create a parent class object in child class reference. If not explain why?
+   Class A extends Class B{
+	
+   } 
+   
+   We cannot create a parent class object in child class reference because of object oriented concepts. we cannot assign a smaller object to a bigger object in hierarchy. 
+
+5. Explain multithreading. Write a program for the same and explain synchronization problem.
+   Multithreading is the ability of a program or an operating system process to manage its use by more than one user at a time and to even manage multiple requests by the same user without having to have multiple copies of the programming running in the computer.  
+
+   class MultithreadingDemo extends Thread{  
+  public void run(){  
+    System.out.println("My thread is in running state.");  
+  }   
+  public static void main(String args[]){  
+     MultithreadingDemo obj1=new MultithreadingDemo();  
+	MultithreadingDemo obj2=new MultithreadingDemo();   
+     obj1.start();  
+     obj2.start();
+  }  
+}    
+
+When we start two or more threads within a program, there may be a situation when multiple threads try to access the same resource and finally they can produce unforeseen result due to concurrency issue. For example if multiple threads try to write within a same file then they may corrupt the data because one of the threads can overrite data or while one thread is opening the same file at the same time another thread might be closing the same file.
+So there is a need to synchronize the action of multiple threads and make sure that only one thread can access the resource at a given point in time. This is implemented using a concept called monitors. Each object in Java is associated with a monitor, which a thread can lock or unlock. Only one thread at a time may hold a lock on a monitor.   
+
+6. Write a code piece using threading where the output should be 1,2,3,4,5,6,7,8,9,10. If there are two threads one thread should print all odd numbers and another should print all even numbers.
+   public class DemoEvenOdd{
+    static Object lock = new Object();
+
+    public static void main(String[] args) {
+        Thread t1 = new Thread(new Runnable() {
+            public void run() {
+
+                for (int itr = 1; itr < 51; itr = itr + 2) {
+                    synchronized (lock) {
+                        System.out.print(" " + itr);
+                        try {
+                            lock.notify();
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            public void run() {
+
+                for (int itr = 2; itr < 51; itr = itr + 2) {
+                    synchronized (lock) {
+                        System.out.print(" " + itr);
+                        try {
+                            lock.notify();
+                            if(itr==50)
+                                break;
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+        try {
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+            System.out.println("\nPrinting over");
+        } catch (Exception e) {
+
+        }
+    }
+} 
+
+7. What are checked and unchecked exceptions.
+   Unchecked exceptions do not have to be caught or declared thrown. Checked exceptions in Java extend the java.lang.Exception class. Unchecked exceptions extend the java.lang.RuntimeException
+
+8. Exception and Inheritance. If parent class throws an IOException what kind of exceptions are allowed to be declared in child class.
+9. What is a Hashmap and how can we autogenerate the keys if not providing explicitly. (Concept of hashing and hashcodes):
+   Contract between hashcode and equals method: if equals returns true for 2 objects of a class then hashcode must be same for them while vice-versa is not true. 
+   
+10. Explain notify() method of object class. If there are more than one threads waiting on that object's monitor which thread will get the notification.
+11. Why class name and file name should be same while creating a new class. Explain the logic behind the same.
+12. Write an algorithm to find nth element of a linked list where you only know the starting point of the list. End point and no.of elements are not known to you.
+13. Write any program in C++.
+
+
+
+Set Two
+Core Java:
+++++++++++
+1. Features of JDK 8 that you have used?
+   lambda, default method interface etc. Please google for more details. 
+
+2. Have you used fork & Join? if you know in detail, please revise the concept otherwise you may ignore this because of complexity. 
+
+3. List Design patterns that you have worked on?
+   Singleton, factory, Abstract Factory, Decorator, Adapter, observer etc. google for details and implementation side.
+ 
+4. Explain Adapter and Decorator and difference between them?
+   Conceptually they are same only difference only difference is the return type of object. in case of decorator it is of same type as the object to decorate while in adapter they are different types. 
+
+5. Explain Visitor Pattern? Google for implementation...
+
+6. Write a program For producer consumer problem and also tell us how would you handle the producer if the queue is full and consumer if queue is empty?
+   class Producer implements Runnable {
+ 
+    private List<Integer> sharedQueue;
+    private int maxSize=2; //maximum number of products which sharedQueue can hold at a time.
+ 
+    public Producer(List<Integer> sharedQueue) {
+        this.sharedQueue = sharedQueue;
+    }
+ 
+    @Override
+    public void run() {
+        for (int i = 1; i <= 10; i++) {  //produce 10 products.
+         try {
+             produce(i);
+         } catch (InterruptedException e) {  e.printStackTrace();   }
+        }
+}
+ 
+    private void produce(int i) throws InterruptedException {
+    
+       synchronized (sharedQueue) {
+           //if sharedQuey is full wait until consumer consumes.
+           while (sharedQueue.size() == maxSize) {
+             System.out.println("Queue is full, producerThread is waiting for "
+                     + "consumerThread to consume, sharedQueue's size= "+maxSize);
+             sharedQueue.wait();
+         }
+        }
+       
+       /* 2 Synchronized blocks have been used means before
+        * producer produces by entering below synchronized
+        * block consumer can consume.  
+        */
+      
+       //as soon as producer produces (by adding in sharedQueue) it notifies consumerThread.
+        synchronized (sharedQueue) {  
+           System.out.println("Produced : " + i);
+           sharedQueue.add(i);
+         Thread.sleep((long)(Math.random() * 1000));
+         sharedQueue.notify();
+        }
+    }
+}
+ 
+/**
+ * Consumer Class.
+ */
+class Consumer implements Runnable {
+    private List<Integer> sharedQueue;
+    public Consumer(List<Integer> sharedQueue) {
+        this.sharedQueue = sharedQueue;
+    }
+   
+    @Override
+    public void run() {
+        while (true) {
+         try {
+             consume();
+             Thread.sleep(100);
+         } catch (InterruptedException e) {  e.printStackTrace();   }
+        }
+    }
+ 
+    private void consume() throws InterruptedException {
+      
+       synchronized (sharedQueue) {
+           //if sharedQuey is empty wait until producer produces.
+           while (sharedQueue.size() == 0) {
+                  System.out.println("Queue is empty, consumerThread is waiting for "
+                               + "producerThread to produce, sharedQueue's size= 0");
+             sharedQueue.wait();
+         }
+       }
+       
+ 
+       /* 2 Synchronized blocks have been used means before
+        * consumer start consuming by entering below synchronized
+        * block producer can produce.  
+        */
+      
+        /*If sharedQueue not empty consumer will consume
+      * (by removing from sharedQueue) and notify the producerThread.
+      */
+        synchronized (sharedQueue) {
+           Thread.sleep((long)(Math.random() * 2000));
+         System.out.println("CONSUMED : "+ sharedQueue.remove(0));
+         sharedQueue.notify();
+        }
+    }
+   
+}
+ 
+public class ProducerConsumerWaitNotify {
+ 
+    public static void main(String args[]) {
+       List<Integer> sharedQueue = new LinkedList<Integer>(); //Creating shared object
+      
+       Producer producer=new Producer(sharedQueue);
+       Consumer consumer=new Consumer(sharedQueue);
+      
+        Thread producerThread = new Thread(producer, "ProducerThread");
+        Thread consumerThread = new Thread(consumer, "ConsumerThread");
+        producerThread.start();
+        consumerThread.start();
+    }
+}
+
+7. Benefit of Synchronized block over synchronized method?
+8. Difference between class level lock and instance level lock?
+
+
+OSGI: 
++++++
+1. Benefits of using OSGI
+   You can drop a bundle at runtime and changes will be picked at runtime without restarting the system. 
+2. How to load classes in OSGI, Creation of executable extension etc.
+   You can load a class using Class.ForName() if this belongs to same bundle, 
+   otherwise you need to use ClassLoader from bundle to use it. Remember OSGI uses a different class loader for each bundle.  
+
+Swing
+++++++
+1. What is common across all swing components?
+   All components uses MVC patterns. 
+2. List all swing components that you ave worked on? including layouts?
+   Its simple if you have worked on?  
+3. Explain how rendering and editing works in JTree and JTable?
+   For tree you need to use TreeCellRenderer and TreecellEditor interfaces while in table you need to use TableCellRenderer and TablecellEditor. Editor comes into picture when you start editing a cell. 
+4. How to create a JTree? Explain what is TreeModel, TreeNode and TreePath and why they required?
+
+
+Set 3
+
+1.	What are web services?
+        A web service is a collection of open protocols and standards used for exchanging data between applications or systems. Software applications written in         	various programming languages and running on various platforms can use web services to exchange data over computer networks like the Internet in a manner         	similar to inter-process communication on a single compute
+2.	How to secure web services from unauthorized access?
+3.	Write a program for creating Restful web service?
+4.	What is the difference between Rest and SOAP based web services?
+5.	Give scenarios where Restful web services should be implemented and where SOAP based web services?
+6.	What is the protocol over which Restful web services work? 
+         
+7.	What is the underlying protocol for http?
+	TCP/IP
+8.	On which protocol, browser works?
+9.	How to overload two methods while creating web service? Will the same URL works for overloaded methods ?
+10.	What do you understand by indexing in terms of database?
+11.	How you will create index?
+12.	What do you understand by View in sql and how you will create?
+13.	Which data type VARCHAR or int better to store unique id in sql and why?
+14.	What do you understand by Singleton design pattern?
+15.	Write a program to implement singleton pattern?
+16.	What are reflections? 
+        Reflection is a technique to load classes and invike methods using indirect approach. here we can load the class using Class.Forname() and then using Class Ref we can get a list of methods. 
+17.	Write a program for Reflection-Proof Lazily Initialized Singleton?
+        Here you need to check inside provate constructor if the object is already crated just throw new InstantiationException from constructor 
+
+        private Singleton(){
+           if(Singleton.singleton != null){
+           	throw new InstntiationException("An instace is already created so should not create another one.");
+	   } 
+	}
+18.	If we call run() method directly in multithreaded program, how it will execute?
+19.	Write a program to print hello and world infinitely in an alternate fashion using two different threads?
+20.	In continuation with Q.19, why can't you write lock.notify() statement  outside synchronized block?
+21.	How prepaid mobile charging system works?
+22.	When call is made from one end, how it goes?
+
+
+Set 4
+
+1 explain JVM Architecture.thread stacks.string pool area.heap and method area.
+
+2. String pool and string object creation.
+
+3. Final class.function.variable behaviour
+
+4 explain object hierarchy and static blocks.
+
+5. Explain hashmap arch.use binary search tree inside map and recalculate complexity
+
+6. Comlexity of various algo in arraylist and linkedlist.
+
+7. Use of equals and hashcode in collections
+
+8. Implement your own arraylist without collections
+
+9. What are various func of list interface.
+Calculate complexity.
+
+10. Diff between java 5/6/7 .eg arraylist
+
+11. git vs svn functions
+
+OLD questions.
+
+======================================================================
+1. Explain class loading in java especially as in OSGI
+2. Hashmap structure in jVM and difference between hastable
+3. How GC works in Java
+4. Explain producer and consumer problem in Java using multithreading
+5. Explain how to reverse(reversing the pointers) a single linked list in java
+without changing the structure.
+6. what is base class for arraylist and what happens when an arraylist exceeds the
+limit.
+7. What is Serialization ? How many methods are there in Serializable interface
+?What is the use of Serialization?
+8. What is Exception and types of Exception . If i write System.out in try block
+,will finally execute ? How to create our own exception?
+9. What is synchronization and how to achieve syncronization in java.
+10.What is multithreading and how to assure that thread t2 will get started after
+thread t1 in multithreading, Write code .
+11.Program of factorial using recursion .
+12.What are the implicit object in jsp .
+13.Life cycle of Servlet .How doGet and doPost gets called in servlet.
+14.Difference between ServletContext and ServletConfig ?
+15.Struts flow , How request goes ?
+16.What is hibernate and what are the advantage of hibernate ?
+17.What is caching , How many lavel of caching in hiberante , What is level 1 and
+level 2 caching in hibernate ?
+18.What is Singaltan design pattern ,write code. If suppose 5 threads are calling
+singaltan method what would happen ?
+19.What is factory design pattern ?
+20.Program of swaping ?
+21.SQL query to get max salary ?
+22. Explain the contract b/w equals() and hashcode().
+23. Explain hashing concepts.
+24. Write a program creating your own arraylist implementation.
+25. What is Generics, and what problem it solves.
+26. What is OSGI container.
+27. How do we configure, load and run an OSGI bundle.
+28. Difference b/w OSGI bundle and service.
+29. Explain constructor chaining.
+30. Methods present in Obj class.
+31. How many methods are there to create threads. Which one is better and why.
+Pre Mar-23-2015 Question Bank received from Mahesh
+---------------------------------------------------
+1. Previous design experience in Java
+2. Which is the Super class of all classes in Java
+3. Methods in Object Class
+4. What is equals() Method
+5. How is equals() Method used for comparison
+6. Experience in Java Design patterns
+7. Collections - Lists etc
+8. Work experience in Collections
+9. Experience in J2EE
+Core Java :
+a) Exception :
+1) Checked exception
+2) UnChecked exception
+3) Super class for Exception
+5) one scenario with try and catch with finally block
+b) Util package :
+Page 1
+Question Bank - Updated Mar232015
+1) List
+2) HashMap
+3) Cursors
+4) Comparable
+5) Comparator
+c) Serialization :
+1) Process of Serialization
+d) Multi Threading :
+1) How many ways we can create Thread
+2) Advantage of going with Runnable interface
+3) Synchronization
+e) static variable :
+f) final variable :
+g) Polymorphism
+h) overloading
+i) overriding
+j) volatile variable
+k) final and static
+l) Singleton
+a) how to implement singleton object
+m) Factorial method
+a) how to implement factorial method
+n) Lang package
+1) Differentiation between StringBuffer and StringBuilder
+Advance Java :
+a) Servlet :
+1) Generic Servlet
+2) HttpServlet
+3) Config
+4) Context
+5) how to find no.of request for a single servlet
+b) JSP :
+1) Life cycle
+2) Implicit object
+Hibernate :
+a) Comparision between JDBC and Hibernate
+b) ORM
+c) How many ways we can save object into DB using hibernate
+Page
+
+
+
+
+Additional Practise Questions-- internal 
+
+1.	Write a program for Quick sort?
+2.	What is the complexity of Quick sort?
+3.	Write a program for Binary search ? 
+	refer to google. 
+4.	What is the complexity of Binary search ?
+        Log n
+5.	What is hashing technique?
+6.	What  are equals and hashcode method ?
+7.	WAP for linked list implementation ?
+8.	What do you understand by class.forName ?
+9.	Explain classloader in java ?
+        There are 2 ways to load the class -> Class.ForName() and ClassLoader.loadClass();        
+ 
+10.	Explain static binding and dynamic binding?
+11.	What is the difference between checked exception and unchecked exception?
+12.	What is static polymorphism and dynamic polymorphism ?
+        static - method overloading, dynamic -> overriding. 
+ 
+13.	How to compile java program using console.
+        
+14.	Why interfaces and abstract classes can't be initialized ?
+        Because Abstract class and interface doesn't have an entry in JVM class loader.
+ 
+15.	What are immutable classes?
+16.	Why string class is immutable?
+        Thread safety, security, quick evaluation in hashmap key as its hashcode is one time generated. 
+   
+17.	What is the difference between string , string buffer and string builder?
+        String is immutable, String buffer and builder is mutable, but string buffer is synchronized while string builder is non synchronized. 
+18.	Explain lifecycle of thread?
+         
+19.	How many ways thread can be created and explain ?
+        Using Thread class, using Runnable and Using ThreadFactory. 
+
+20.	Explain different methods of thread like wait , notify, sleep, yield, join, run, notifyall?
+21.	What is the difference between wait and sleep methods of thread?
+22.	Can we call the run() method instead of start()?
+        yes, but calling run will not create a new thread and it will run in current thread. Using start() creates a new thread. 
+
+23.	Difference between vector and arraylist?
+24.	Difference between hashmap and hastable?
+	hashmap -> unsynchronized, hashtable -> synchronized 
+25.	What is Concurrent hashmap and what is the need  for this?
+        concurrentHashMap partially synchronized, or smartly synchronized. A hash table supporting full concurrency of retrievals and adjustable expected concurrency for updates. This class obeys the same functional specification as Hashtable, and includes versions of methods corresponding to each method of Hashtable. However, even though all operations are thread-safe, retrieval operations do not entail locking, and there is not any support for locking the entire table in a way that prevents all access. This class is fully interoperable with Hashtable in programs that rely on its thread safety but not on its synchronization details.
+  
+26.	Difference between set and list?
+27.	What is linked list?
+28.	How to sort the array of objects? 
+29.	How to sort the collection of object ?
+        Collections.sort(collection), you may need to pass a comparator to compare 2 objects or the class needs to implement comparable interface.   
+30.	How to make list classes thread safe?
+31.	How to make set classes thread safe?
+        Collections.Synchronize(set/list)
+
+32.	How can we stop running thread ?
+	There is no way to stop a thread, you can just interrupt it.
+
+33.	What is synchronization?
+
+34.	Can Java object be locked down for exclusive use by a given thread?
+        Yes. You can lock an object by putting it in a "synchronized" block. The locked object is inaccessible to any thread other than the one that explicitly claimed it. If a thread attempts to execute a synchronized method or synchronized statement and is unable to acquire an object's lock, it enters the waiting state until the lock becomes available.	
+
+35.	What is difference between a thread and  process?
+        A process can have multiple threads. 
+36.	What is the difference between yield() and sleep()?
+        yield() gives priority for execution to high priorty threads while sleep to used to temprarily pause execution on a thread.  
+37.	What is difference between notify() and notifyAll()?
+        Notify wakes up one single thread at random while notifyAll wakes up all waiting threads.  
+38.	What is the difference between wait() and sleep()?
+        when an object goes to wait it releases its locks from resources that it acquired, sleep goes to sleep with all its locks on resources. 
+39.	What are thread priorities? How can we make class as immutable ?
+40.	Difference between comparator and comparable ?
+	Comparator has a method compare that compare 2 objects outside a class, while comparable has a method compareTo which takes one argument that compares this input object with current instance. 
+41.	When we will use arraylist and when linked list ?
+        For freqyent add/remove one should use link list while for frequent access you should use ArrayList.  
+42.	What are design patterns in java?
+43.	What are three categories of design patterns in java?
+44.	Explain singleton pattern and write a program to implement?
+45.	Explain decorator pattern and write a program to implement?
+46.	Explain Factory pattern and write a program to implement?
+47.	Explain Abstract factory pattern and write a program to implement?
+48.	Explain Adaptor  pattern and write a program to implement?
+        What is serialization ?
+50.	Difference between Java 1.6 and 1.7 ?
+        1.7 comes with diamond in generics and you can pass string in switch statement. 
+51.	What do you understand by equals and hashcode contract ?
+
+52.   	9 balls 1 odd, minimum iterations to find odd ball?
+   	2 iterations, create a set of 3-3 balls and then compare.
+53.     2 cords each can burn in 1 hour, how you wull calculate 15 minutes without using any external support?
+54. 	Functinal interface in java?
+        Functional interfaces are new additions in java 8 which permit exactly one abstract method inside them. These interfaces are also called Single Abstract Method 	interfaces (SAM Interfaces). These can be represented using Lambda expressions, Method reference and constructor references as well. Java 8 introduces an 	annotation i.e. @FunctionalInterface too, which can be used for compiler level errors when the interface you have annotated violates the contracts of 	Functional Interface.
+
+55.     How hashset works in java?
+	Hashset uses HashMap internally, where objects in hashset used as keys in hashmap and for values a dummy value is placed as this is of no interest.
+ 
+56. 	How to create arraylist using arrays in java?
+57. 	Auto Commit is set to false and transaction throws an exception and leads to exceptions further in stack trace. What can be done not to propagate the exception.
+58. 	How can you make your own hashmap. Maybe he wanted to know equals and hashcode mechanism.
+        Implement map interface. Please see http://www.javamadesoeasy.com/2015/02/hashmap-custom-implementation.html for more details. 
+ 
+59. 	Difference between RuntimeException and Unchecked exceptions. Just for confusion.
+60. 	Executor pattern.
+61. 	What if we remove Annotations in java i.e. what will happen if we remove @override.
+
+	
+	Use it every time you override a method for two benefits. Do it so that you can take advantage of the compiler checking to make sure you actually are 	overriding a method when you think you are. This way, if you make a common mistake of misspelling a method name or not correctly matching the parameters, you 		will be warned that you method does not actually override as you think it does. Secondly, it makes your code easier to understand because it is more obvious 	when methods are overwritten.
+
+Additionally, in Java 1.6 you can use it to mark when a method implements an interface for the same benefits. I think it would be better to have a separate annotation (like @Implements), but it's better than nothing.
+
+
+
+62.	how memory management done in java, how GC works on the memory.
+	4 garbage collectors, default, Weak, Soft, Phantom and Strong refernces.
+
+
+	In Java, memory is allocated only to objects. There is no explicit allocation of memory, there is only the creation of new objects. (Java even treats array types as objects.)
+
+The Java runtime employs a garbage collector that reclaims the memory occupied by an object once it determines that object is no longer accessible. This automatic process makes it safe to throw away unneeded object references because the garbage collector does not collect the object if it is still needed elsewhere. Therefore, in Java the act of letting go of unneeded references never runs the risk of deallocating memory prematurely.
+
+In Java, it's easy to let go of an entire "tree" of objects by setting the reference to the tree's root to null; the garbage collector will then reclaim all the objects (unless some of the objects are needed elsewhere). This is a lot easier than coding each of the objects' destructors to let go of its own dependencies (which is a coding-level problem with C++).
+
+	for more information, read http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html
+
+63.	Why wait, notify and notifyAll method are part of the Object class
+        Answer to your first question is As every object in java has only one lock(monitor) and wait(),notify(),notifyAll() are used for monitor sharing thats why they 	are part of Object class rather than Thread class. the wait() method will release the lock on the specified object and waits when it can retrieve the lock. 
+64. 	Flow of struts application.
+65. 	Array List is based on which data structure concept/logic.
+66.	Why there is need of a Queue concept with real time example.
+67.	Difference b/w Set and Queue in detail with real time examples. 
+68.	Why legacy classes are still needed in newer version of JDK. 
+69.	Difference b/w Hash Set & Hash Table in detail.
+70.	What is Memory Management in Java and how it can be achieved by JVM.
+71.	What is the purpose of Stack,Heap & Register in detail with examples.
+72.	Difference b/w  Stack & Heap in detail.
+73.	Complexity of traversing through Array List and Linked List.
+74. 	LOGIC FOR STRING REVERESE IN OPTIMISED WAY.
+
+75. 	IMPLEMENTATION OF LINKLIST AND ARRAYLIST.
+
+76. 	BASECLASS FOR ALL EXCEPTIONS AND ERRORS.
+
+77. 	CHECKED AND UNCHECKED EXCEPTIONS.
+
+78. 	CAN WE THROW/CATCH ERRORS
+
+79. 	WHAT WILL BE BEHAVIOUR OF MY PROGRAM IF I THROW STACKOVERFLOW ERROR.
+
+80. 	DIFFERENCE IN PRIMARY KEY, UNIQUE KEY AND FOREIGN KEY.
+
+81. 	MS-SQL QUERY TO FIND THIRD MAXIMUM SALARY FROM TABLE IF NAME AND SALARY GIVEN IN TABLE.
+82.	OUTPUT FOR FOLLOWING PROGRAM
+public class ClassB extends ClassA {
+
+	static {
+		System.out.println("ClassB Static");
+	}
+
+	public ClassB() {
+		// TODO Auto-generated constructor stub
+		System.out.println("ClassB Constructer");
+	}
+
+	{
+		System.out.println("ClassB init");
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+		ClassB b = new ClassB();
+
+	}
+
+}
+
+class ClassA {
+	static {
+		System.out.println("ClassA Static");
+	}
+
+	public ClassA() {
+		// TODO Auto-generated constructor stub
+		System.out.println("ClassA Constructer");
+	}
+}
+
+O/P:
+ClassA Static
+ClassB Static
+ClassA Constructer
+ClassB init
+ClassB Constructer
+
+##########################################################################
+1. Complexity of Get() and Put() method in HashMap.
+2. Implementation difference between Collections.synchronized(Map) and ConcurrentHashMap
+3. what part of computer memory is used as Heap and Stack ( Registers, RAM and HardDisk)
+4. Most optimal way to iterate through a HashMap
+5. If we have an Arraylist with initial size defined as 100 and we have stored 70 objects in it. How can we reset the size of list to 70 to free the memory?
+6. in immutable class, if we have reference for Array list and other mutable object as instance variable, how to make sure these objects do not change their values.
+7. Interceptors in Struts.
+8. Difference between Interceptors and Filters
+9. How to implement REST style operations using Struts Actions
+10. Blocking Queue and its implementation and why not use simple Queue
+11. Design Question - An application accepts requests, note down it's incoming time and pass it to some downstream system. Request is processed and returns back to application. If the request is not processed in designated time period, that request message is sent again for processing. Two times time out will cause fail request error. No of request can be in thousands per second. What kind of design approach and data structures should be used here.
+12. Design Question: A lab had different components which are sensitive to temperature and air pressure and reacts differently at different combination of temp and pressure. Design pattern to implement this lab.
+
